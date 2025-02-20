@@ -1,0 +1,25 @@
+name: Prism Migrate Deploy to Staging DB
+on:
+    pull_request:
+        types: [opened, reopened, synchronize]
+        branches:
+            - "main"
+        paths:
+            - prisma/migrations/** # Only run this workflow when migrations are updated
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: "1.23"
+
+            - name: Apply all pending migrations to the database
+              run: go run github.com/steebchen/prisma-client-go migrate deploy
+              env:
+                  DATABASE_URL: ${{ secrets.DATABASE_URL_STAG }}
+                  DIRECT_URL: ${{ secrets.DIRECT_URL_STAG }}
