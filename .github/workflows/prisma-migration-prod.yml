@@ -1,0 +1,26 @@
+name: Prism Migrate Deploy to Prod DB
+on:
+    push:
+        paths:
+            - prisma/migrations/** # Trigger on migration changes
+        branches:
+            - main
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: "latest"
+
+            - run: bun install
+
+            - name: Apply all pending migrations to the database
+              run: go run github.com/steebchen/prisma-client-go migrate deploy
+              env:
+                  DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+                  DIRECT_URL: ${{ secrets.DIRECT_URL_PROD }}
