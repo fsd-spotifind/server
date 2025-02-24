@@ -1,4 +1,4 @@
-name: Go-test
+name: lint and test
 on:
   push:
     branches:
@@ -15,19 +15,42 @@ on:
       - "go.sum"
 
 jobs:
-  build:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.22.x"
+
+      - name: Generate Prisma Client
+        run: go run github.com/steebchen/prisma-client-go generate
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          args: --timeout=5m
+
+      - name: Run go vet
+        run: go vet ./...
+
+  test:
+    needs: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.23.x"
+          go-version: "1.22.x"
 
       - name: Install Prisma Client Go
         run: go run github.com/steebchen/prisma-client-go generate
 
       - name: Build
         run: go build -v ./...
+
       - name: Test with the Go CLI
         run: go test ./...
