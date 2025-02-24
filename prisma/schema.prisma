@@ -10,7 +10,7 @@ datasource db {
 model User {
     id           String   @id @default(cuid())
     username     String   @unique
-    passwordHash String   @unique
+    passwordHash String
     isVerified   Boolean  @default(false) @map("is_verified")
     email        String   @unique
     bio          String?
