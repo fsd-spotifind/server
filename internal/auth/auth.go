@@ -33,7 +33,7 @@ func CheckPasswordHash(password, hash string) error {
 }
 
 func MakeJWT(
-	userID uuid.UUID,
+	userID string,
 	tokenSecret string,
 	expiresIn time.Duration,
 ) (string, error) {
@@ -42,7 +42,7 @@ func MakeJWT(
 		Issuer:    string(TokenTypeAccess),
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(expiresIn)),
-		Subject:   userID.String(),
+		Subject:   userID,
 	})
 	return token.SignedString(signingKey)
 }

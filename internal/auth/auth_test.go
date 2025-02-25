@@ -64,7 +64,7 @@ func TestCheckPasswordHash(t *testing.T) {
 
 func TestValidateJWT(t *testing.T) {
 	userID := uuid.New()
-	validToken, _ := MakeJWT(userID, "secret", time.Hour)
+	validToken, _ := MakeJWT(userID.String(), "secret", time.Hour)
 
 	tests := []struct {
 		name        string
