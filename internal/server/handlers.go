@@ -157,3 +157,19 @@ func (s *Server) revokeHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	refreshToken, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Couldn't find bearer token", err)
+		return
+	}
+
+	err = s.db.RevokeRefreshToken(r.Context(), refreshToken)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't logout", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

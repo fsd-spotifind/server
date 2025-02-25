@@ -18,6 +18,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.HandleFunc("POST /login", s.loginHandler)
 	mux.HandleFunc("POST /refresh", s.refreshHandler)
 	mux.HandleFunc("POST /revoke", s.revokeHandler)
+	mux.HandleFunc("POST /logout", s.logoutHandler)
 
 	// Wrap the mux with CORS middleware
 	return s.corsMiddleware(mux)
