@@ -22,6 +22,7 @@ model User {
     friendsReceived  Friend[]        @relation("UserTwo")
     songOfTheDay     SongOfTheDay[]
     userStatistics   UserStatistic[]
+    RefreshToken     RefreshToken[]
 
     @@map("user")
 }
@@ -72,6 +73,18 @@ model UserStatistic {
     user User @relation(fields: [userId], references: [id])
 
     @@map("user_statistic")
+}
+
+model RefreshToken {
+    token     String    @id
+    userId    String    @map("user_id")
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    expiresAt DateTime  @map("expires_at")
+    revokedAt DateTime? @map("revoked_at")
+
+    @@index([userId])
 }
 
 // TODO: Add User-Genre table for discovery feature
