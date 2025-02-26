@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fsd-backend/internal/auth"
+	"fsd-backend/internal/logger"
 	"fsd-backend/prisma/db"
 	"net/http"
 	"strings"
@@ -26,7 +27,8 @@ func (s *Server) registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	hashedPassword, err := auth.HashPassword(params.Password)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't hash password", err)
+		logger.ErrorLog.Printf("Couldn't hash password: %s", err)
+		respondWithError(w, http.StatusInternalServerError, "Failed to register user", err)
 		return
 	}
 
@@ -36,7 +38,7 @@ func (s *Server) registerHandler(w http.ResponseWriter, r *http.Request) {
 			respondWithError(w, http.StatusBadRequest, "Email or username already exists", err)
 			return
 		}
-		respondWithError(w, http.StatusInternalServerError, "Couldn't create user", err)
+		respondWithError(w, http.StatusInternalServerError, "Failed to register user", err)
 		return
 	}
 
@@ -59,7 +61,8 @@ func (s *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
 	params := parameters{}
 	err := decoder.Decode(&params)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
+		logger.ErrorLog.Printf("Couldn't decode parameters: %s", err)
+		respondWithError(w, http.StatusInternalServerError, "Failed to login", err)
 		return
 	}
 
@@ -98,7 +101,8 @@ func (s *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
 		time.Now().Add(time.Hour*24*60), // 60 days
 	)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't store refresh token", err)
+		logger.ErrorLog.Printf("Couldn't store refresh token: %s", err)
+		respondWithError(w, http.StatusInternalServerError, "Failed to login", err)
 		return
 	}
 
@@ -133,7 +137,8 @@ func (s *Server) refreshHandler(w http.ResponseWriter, r *http.Request) {
 		time.Hour,
 	)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't create access token", err)
+		logger.ErrorLog.Printf("Couldn't create access token: %s", err)
+		respondWithError(w, http.StatusInternalServerError, "Failed to refresh token", err)
 		return
 	}
 
@@ -151,7 +156,8 @@ func (s *Server) revokeHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = s.db.RevokeRefreshToken(r.Context(), refreshToken)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't revoke refresh token", err)
+		logger.ErrorLog.Printf("Couldn't revoke refresh token: %s", err)
+		respondWithError(w, http.StatusInternalServerError, "Failed to revoke refresh token", err)
 		return
 	}
 
