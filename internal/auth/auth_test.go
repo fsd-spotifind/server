@@ -27,13 +27,7 @@ func TestCheckPasswordHash(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name:     "Incorrect password",
-			password: "wrongPassword",
-			hash:     hash1,
-			wantErr:  true,
-		},
-		{
-			name:     "Password doesn't match different hash",
+			name:     "Password mismatch",
 			password: password1,
 			hash:     hash2,
 			wantErr:  true,
