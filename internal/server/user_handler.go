@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"fsd-backend/internal/auth"
 	"fsd-backend/internal/logger"
 	"fsd-backend/prisma/db"
@@ -26,6 +27,8 @@ func (s *Server) registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hashedPassword, err := auth.HashPassword(params.Password)
+	// print hashed password
+	fmt.Println(hashedPassword)
 	if err != nil {
 		logger.ErrorLog.Printf("Couldn't hash password: %s", err)
 		respondWithError(w, http.StatusInternalServerError, "Failed to register user", err)

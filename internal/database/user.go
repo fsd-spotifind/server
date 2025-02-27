@@ -3,43 +3,10 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	db "fsd-backend/prisma/db"
 )
-
-type Service interface {
-	CreateUser(ctx context.Context, email, username, passwordHash string) (*db.UserModel, error)
-	GetUserByEmail(ctx context.Context, email string) (*db.UserModel, error)
-	CreateRefreshToken(ctx context.Context, token string, userID string, expiresAt time.Time) error
-	GetUserFromRefreshToken(ctx context.Context, token string) (*db.UserModel, error)
-	RevokeRefreshToken(ctx context.Context, token string) error
-	Health() map[string]string
-	Close() error
-}
-
-type service struct {
-	client *db.PrismaClient
-}
-
-var dbInstance *service
-
-func New() Service {
-	if dbInstance != nil {
-		return dbInstance
-	}
-
-	client := db.NewClient()
-	if err := client.Prisma.Connect(); err != nil {
-		log.Fatal(err)
-	}
-
-	dbInstance = &service{
-		client: client,
-	}
-	return dbInstance
-}
 
 func (s *service) CreateUser(ctx context.Context, email, username, passwordHash string) (*db.UserModel, error) {
 	return s.client.User.CreateOne(
