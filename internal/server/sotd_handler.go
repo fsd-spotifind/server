@@ -33,7 +33,7 @@ func (s *Server) createSotdHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, sotd)
 }
 
-func (s *Server) getSotdHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getSotdBydateHandler(w http.ResponseWriter, r *http.Request) {
 	UserID := r.PathValue("userId")
 	Date := r.URL.Query().Get("date")
 
@@ -45,13 +45,36 @@ func (s *Server) getSotdHandler(w http.ResponseWriter, r *http.Request) {
 
 	ParsedDate := time.Unix(UnixTime, 0).UTC()
 
-	sotd, err := s.db.GetSotd(r.Context(), UserID, ParsedDate)
+	sotd, err := s.db.GetSotdByDate(r.Context(), UserID, ParsedDate)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to get Sotd", err)
 		return
 	}
 
 	respondWithJSON(w, http.StatusOK, sotd)
+}
+
+func (s *Server) getSotdsHandler(w http.ResponseWriter, r *http.Request) {
+	UserID := r.PathValue("userId")
+	limitParam := r.URL.Query().Get("limit")
+	offsetParam := r.URL.Query().Get("offset")
+
+	limit, err := strconv.Atoi(limitParam)
+	if err != nil || limit <= 0 {
+		limit = 10
+	}
+
+	offset, err := strconv.Atoi(offsetParam)
+	if err != nil || offset < 0 {
+		offset = 0
+	}
+
+	sotds, err := s.db.GetAllSotd(r.Context(), UserID, limit, offset)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't fetch Song of the Day entries", err)
+		return
+	}
+	respondWithJSON(w, http.StatusOK, sotds)
 }
 
 func (s *Server) updateSotdHandler(w http.ResponseWriter, r *http.Request) {
