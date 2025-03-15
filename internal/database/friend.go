@@ -62,8 +62,6 @@ func (s *service) GetFriendRequests(ctx context.Context, userId string) ([]Frien
 		return nil, err
 	}
 
-	fmt.Println(friendRequests)
-
 	friendRequestsList := make([]FriendWithUsers, len(friendRequests))
 	for i, f := range friendRequests {
 		friendRequestsList[i] = FriendWithUsers{
