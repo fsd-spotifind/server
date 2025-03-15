@@ -61,16 +61,19 @@ func (s *service) GetFriendRequests(ctx context.Context, userId string) ([]Frien
 	if err != nil {
 		return nil, err
 	}
-	friendRequestsList := []FriendWithUsers{}
-	for _, f := range friendRequests {
-		friendRequestsList = append(friendRequestsList, FriendWithUsers{
+
+	fmt.Println(friendRequests)
+
+	friendRequestsList := make([]FriendWithUsers, len(friendRequests))
+	for i, f := range friendRequests {
+		friendRequestsList[i] = FriendWithUsers{
 			ID:        f.ID,
 			Status:    f.Status,
-			UserOne:   UserPublic{ID: f.UserOne().ID, Email: f.UserOne().Email, Username: f.UserOne().Username},
-			UserTwo:   UserPublic{ID: f.UserTwo().ID, Email: f.UserTwo().Email, Username: f.UserTwo().Username},
+			UserOne:   UserPublic{ID: f.UserOne().ID, Email: f.UserOne().Email, Username: f.UserOne().Name},
+			UserTwo:   UserPublic{ID: f.UserTwo().ID, Email: f.UserTwo().Email, Username: f.UserTwo().Name},
 			CreatedAt: f.CreatedAt.String(),
 			UpdatedAt: f.UpdatedAt.String(),
-		})
+		}
 	}
 	return friendRequestsList, nil
 }
@@ -110,17 +113,16 @@ func (s *service) GetFriends(ctx context.Context, userId string) ([]FriendWithUs
 	if err != nil {
 		return nil, err
 	}
-
-	friendList := []FriendWithUsers{}
-	for _, f := range friends {
-		friendList = append(friendList, FriendWithUsers{
+	friendList := make([]FriendWithUsers, len(friends))
+	for i, f := range friends {
+		friendList[i] = FriendWithUsers{
 			ID:        f.ID,
 			Status:    f.Status,
-			UserOne:   UserPublic{ID: f.UserOne().ID, Email: f.UserOne().Email, Username: f.UserOne().Username},
-			UserTwo:   UserPublic{ID: f.UserTwo().ID, Email: f.UserTwo().Email, Username: f.UserTwo().Username},
+			UserOne:   UserPublic{ID: f.UserOne().ID, Email: f.UserOne().Email, Username: f.UserOne().Name},
+			UserTwo:   UserPublic{ID: f.UserTwo().ID, Email: f.UserTwo().Email, Username: f.UserTwo().Name},
 			CreatedAt: f.CreatedAt.String(),
 			UpdatedAt: f.UpdatedAt.String(),
-		})
+		}
 	}
 	return friendList, nil
 }
