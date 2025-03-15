@@ -13,6 +13,10 @@ type Service interface {
 	CreateSotd(ctx context.Context, userID, trackID, note, mood string) (*db.SongOfTheDayModel, error)
 	GetSotd(ctx context.Context, userId string, date time.Time) (*db.SongOfTheDayModel, error)
 	UpdateSotd(ctx context.Context, sotdId, trackId, note, mood string) (*db.SongOfTheDayModel, error)
+	AddFriend(ctx context.Context, userId, friendId string) (*db.FriendModel, error)
+	GetFriendRequests(ctx context.Context, userId string) ([]FriendWithUsers, error)
+	AcceptFriendRequest(ctx context.Context, userId, requestId string) (*db.FriendModel, error)
+	GetFriends(ctx context.Context, userId string) ([]FriendWithUsers, error)
 	Health() map[string]string
 	Close() error
 }
