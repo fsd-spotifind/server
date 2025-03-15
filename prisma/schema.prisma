@@ -132,7 +132,7 @@ enum StatisticPeriod {
 }
 
 enum FriendStatus {
+    PENDING @map("pending")
     ACTIVE  @map("active")
-    BLOCKED @map("blocked")
     REMOVED @map("removed")
 }
