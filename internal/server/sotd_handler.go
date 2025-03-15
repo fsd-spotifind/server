@@ -8,8 +8,9 @@ import (
 )
 
 func (s *Server) createSotdHandler(w http.ResponseWriter, r *http.Request) {
+	UserID := r.PathValue("userId")
+
 	type parameters struct {
-		UserID  string `json:"user_id"`
 		TrackID string `json:"track_id"`
 		Note    string `json:"note"`
 		Mood    string `json:"mood"`
@@ -23,7 +24,7 @@ func (s *Server) createSotdHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sotd, err := s.db.CreateSotd(r.Context(), params.UserID, params.TrackID, params.Note, params.Mood)
+	sotd, err := s.db.CreateSotd(r.Context(), UserID, params.TrackID, params.Note, params.Mood)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to create Sotd", err)
 		return
@@ -33,18 +34,18 @@ func (s *Server) createSotdHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getSotdHandler(w http.ResponseWriter, r *http.Request) {
-	userId := r.URL.Query().Get("user_id")
-	date := r.URL.Query().Get("date")
+	UserID := r.PathValue("userId")
+	Date := r.URL.Query().Get("date")
 
-	unixTime, err := strconv.ParseInt(date, 10, 64)
+	UnixTime, err := strconv.ParseInt(Date, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid Unix timestamp format", http.StatusBadRequest)
 		return
 	}
 
-	parsedDate := time.Unix(unixTime, 0).UTC()
+	ParsedDate := time.Unix(UnixTime, 0).UTC()
 
-	sotd, err := s.db.GetSotd(r.Context(), userId, parsedDate)
+	sotd, err := s.db.GetSotd(r.Context(), UserID, ParsedDate)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to get Sotd", err)
 		return
@@ -54,8 +55,9 @@ func (s *Server) getSotdHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) updateSotdHandler(w http.ResponseWriter, r *http.Request) {
+	SotdID := r.PathValue("sotdId")
+
 	type parameters struct {
-		SotdID  string `json:"sotd_id"`
 		TrackID string `json:"track_id"`
 		Note    string `json:"note"`
 		Mood    string `json:"mood"`
@@ -69,7 +71,7 @@ func (s *Server) updateSotdHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sotd, err := s.db.UpdateSotd(r.Context(), params.SotdID, params.TrackID, params.Note, params.Mood)
+	sotd, err := s.db.UpdateSotd(r.Context(), SotdID, params.TrackID, params.Note, params.Mood)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to update Sotd", err)
 		return

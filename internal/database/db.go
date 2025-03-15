@@ -10,7 +10,7 @@ import (
 
 type Service interface {
 	GetUserByEmail(ctx context.Context, email string) (*db.UserModel, error)
-	CreateSotd(ctx context.Context, userID, trackID, note, mood string) (*db.SongOfTheDayModel, error)
+	CreateSotd(ctx context.Context, userId, trackId, note, mood string) (*db.SongOfTheDayModel, error)
 	GetSotd(ctx context.Context, userId string, date time.Time) (*db.SongOfTheDayModel, error)
 	UpdateSotd(ctx context.Context, sotdId, trackId, note, mood string) (*db.SongOfTheDayModel, error)
 	AddFriend(ctx context.Context, userId, friendId string) (*db.FriendModel, error)

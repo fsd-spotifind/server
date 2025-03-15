@@ -2,11 +2,20 @@ package database
 
 import (
 	"context"
+	"errors"
 	db "fsd-backend/prisma/db"
 	"time"
 )
 
 func (s *service) CreateSotd(ctx context.Context, userId, trackId, note, mood string) (*db.SongOfTheDayModel, error) {
+	currentDate := time.Now().UTC()
+	sotd, err := s.GetSotd(ctx, userId, currentDate)
+	if err != nil {
+		return nil, err
+	}
+	if sotd != nil {
+		return nil, errors.New("SOTD already exists, please update it instead of creating a new one")
+	}
 	return s.client.SongOfTheDay.CreateOne(
 		db.SongOfTheDay.TrackID.Set(trackId),
 		db.SongOfTheDay.User.Link(db.User.ID.Equals(userId)),
