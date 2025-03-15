@@ -14,12 +14,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	mux.HandleFunc("GET /health", s.healthHandler)
 
-	mux.HandleFunc("POST /register", s.registerHandler)
-	mux.HandleFunc("POST /login", s.loginHandler)
-	mux.HandleFunc("POST /refresh", s.refreshHandler)
-	mux.HandleFunc("POST /revoke", s.revokeHandler)
-	mux.HandleFunc("POST /logout", s.logoutHandler)
-
 	mux.HandleFunc("POST /sotd", s.createSotdHandler)
 	mux.HandleFunc("GET /sotd", s.getSotdHandler)
 	mux.HandleFunc("PUT /sotd", s.updateSotdHandler)
