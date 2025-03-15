@@ -35,7 +35,7 @@ func (s *Server) createSotdHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getSotdBydateHandler(w http.ResponseWriter, r *http.Request) {
 	UserID := r.PathValue("userId")
-	Date := r.URL.Query().Get("date")
+	Date := r.PathValue("date")
 
 	UnixTime, err := strconv.ParseInt(Date, 10, 64)
 	if err != nil {
