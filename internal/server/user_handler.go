@@ -12,10 +12,10 @@ func (s *Server) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	UserID := r.PathValue("userId")
 	user, err := s.db.GetUserById(r.Context(), UserID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Couldn't get user profile details", err)
 		return
 	}
-	json.NewEncoder(w).Encode(user)
+	respondWithJSON(w, http.StatusCreated, user)
 }
 
 func (s *Server) createUserStatisticHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,10 +41,10 @@ func (s *Server) createUserStatisticHandler(w http.ResponseWriter, r *http.Reque
 
 	userStatistic, err := s.db.CreateUserStatistic(r.Context(), UserID, params.Period, params.TotalTracks, params.TotalDuration, params.UniqueArtists, params.Vibe, params.TopArtistsIds, params.TopTracksIds, params.TopAlbumsIds)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to create user statistics", err)
 		return
 	}
-	json.NewEncoder(w).Encode(userStatistic)
+	respondWithJSON(w, http.StatusCreated, userStatistic)
 }
 
 func (s *Server) getUserStatisticByPeriodHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,8 +52,8 @@ func (s *Server) getUserStatisticByPeriodHandler(w http.ResponseWriter, r *http.
 	Period := r.PathValue("period")
 	userStatistic, err := s.db.GetUserStatisticByPeriod(r.Context(), UserID, db.StatisticPeriod(strings.ToUpper(Period)))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "Failed to get user statistics", err)
 		return
 	}
-	json.NewEncoder(w).Encode(userStatistic)
+	respondWithJSON(w, http.StatusCreated, userStatistic)
 }
