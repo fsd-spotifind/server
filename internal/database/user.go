@@ -8,9 +8,30 @@ import (
 	db "fsd-backend/prisma/db"
 )
 
-func (s *service) GetUserByEmail(ctx context.Context, email string) (*db.UserModel, error) {
+func (s *service) GetUserById(ctx context.Context, userId string) (*db.UserModel, error) {
 	return s.client.User.FindUnique(
-		db.User.Email.Equals(email),
+		db.User.ID.Equals(userId),
+	).Exec(ctx)
+}
+
+func (s *service) CreateUserStatistic(ctx context.Context, userId string, period db.StatisticPeriod, totalTracks, totalDuration, uniqueArtists int, vibe string, topArtistsIds, topTracksIds, topAlbumsIds []string) (*db.UserStatisticModel, error) {
+	return s.client.UserStatistic.CreateOne(
+		db.UserStatistic.Period.Set(period),
+		db.UserStatistic.User.Link(db.User.ID.Equals(userId)),
+		db.UserStatistic.TotalTracks.Set(totalTracks),
+		db.UserStatistic.TotalDuration.Set(totalDuration),
+		db.UserStatistic.UniqueArtists.Set(uniqueArtists),
+		db.UserStatistic.Vibe.Set(vibe),
+		db.UserStatistic.TopArtistsIds.Set(topArtistsIds),
+		db.UserStatistic.TopTracksIds.Set(topTracksIds),
+		db.UserStatistic.TopAlbumsIds.Set(topAlbumsIds),
+	).Exec(ctx)
+}
+
+func (s *service) GetUserStatisticByPeriod(ctx context.Context, userId string, period db.StatisticPeriod) ([]db.UserStatisticModel, error) {
+	return s.client.UserStatistic.FindMany(
+		db.UserStatistic.UserID.Equals(userId),
+		db.UserStatistic.Period.Equals(period),
 	).Exec(ctx)
 }
 
@@ -32,8 +53,4 @@ func (s *service) Health() map[string]string {
 	stats["status"] = "up"
 	stats["message"] = "Database connection is healthy"
 	return stats
-}
-
-func (s *service) Close() error {
-	return s.client.Prisma.Disconnect()
 }
