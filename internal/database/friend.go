@@ -21,9 +21,9 @@ type FriendWithUsers struct {
 	UpdatedAt string          `json:"updatedAt"`
 }
 
-func (s *service) AddFriend(ctx context.Context, userID, friendID string) (*db.FriendModel, error) {
-	userOne := userID
-	userTwo := friendID
+func (s *service) AddFriend(ctx context.Context, userId, friendId string) (*db.FriendModel, error) {
+	userOne := userId
+	userTwo := friendId
 	existingFriend, err := s.client.Friend.FindFirst(
 		db.Friend.Or(
 			db.Friend.And(

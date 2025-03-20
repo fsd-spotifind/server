@@ -9,7 +9,9 @@ import (
 )
 
 type Service interface {
-	GetUserByEmail(ctx context.Context, email string) (*db.UserModel, error)
+	GetUserById(ctx context.Context, userId string) (*db.UserModel, error)
+	CreateUserStatistic(ctx context.Context, userId string, period db.StatisticPeriod, totalTracks, totalDuration, uniqueArtists int, vibe string, topArtistsIds, topTracksIds, topAlbumsIds []string) (*db.UserStatisticModel, error)
+	GetUserStatisticByPeriod(ctx context.Context, userId string, period db.StatisticPeriod) ([]db.UserStatisticModel, error)
 	CreateSotd(ctx context.Context, userId, trackId, note, mood string) (*db.SongOfTheDayModel, error)
 	GetSotdByDate(ctx context.Context, userId string, date time.Time) (*db.SongOfTheDayModel, error)
 	GetAllSotd(ctx context.Context, userId string, limit, offset int) (*PaginatedSotdResponse, error)
@@ -42,4 +44,8 @@ func New() Service {
 		client: client,
 	}
 	return dbInstance
+}
+
+func (s *service) Close() error {
+	return s.client.Prisma.Disconnect()
 }
