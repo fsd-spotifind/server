@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,24 +10,26 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 
 	"fsd-backend/internal/database"
+	"fsd-backend/internal/spotify"
 )
 
 type Server struct {
-	port      int
-	jwtSecret string
-	db        database.Service
+	port    int
+	db      database.Service
+	spotify spotify.Service
 }
 
 func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		log.Fatal("JWT_SECRET must be set")
-	}
+
+	spotifyConfig := spotify.DefaultConfig()
+	spotifyConfig.ClientID = os.Getenv("SPOTIFY_CLIENT_ID")
+	spotifyConfig.ClientSecret = os.Getenv("SPOTIFY_CLIENT_SECRET")
+
 	NewServer := &Server{
-		port:      port,
-		jwtSecret: jwtSecret,
-		db:        database.New(),
+		port:    port,
+		db:      database.New(),
+		spotify: spotify.NewService(spotifyConfig),
 	}
 
 	// Declare Server config
