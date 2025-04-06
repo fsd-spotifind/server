@@ -22,6 +22,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.HandleFunc("GET /user/{userId}/sotds/{date}", s.getSotdBydateHandler)
 	mux.HandleFunc("GET /user/{userId}/sotds", s.getSotdsHandler)
 	mux.HandleFunc("PUT /sotd/{sotdId}", s.updateSotdHandler)
+	mux.HandleFunc("GET /user/{userId}/sotds/recommended", s.getRecommendedSotdsHandler)
 
 	mux.HandleFunc("POST /user/{userId}/friends/requests", s.addFriendHandler)
 	mux.HandleFunc("GET /user/{userId}/friends/requests", s.getFriendRequestsHandler)

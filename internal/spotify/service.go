@@ -11,6 +11,7 @@ import (
 type Service interface {
 	GetTrackByID(ctx context.Context, token string, itemId string) (*models.Track, error)
 	GetTracksByIDs(ctx context.Context, token string, ids []string) ([]models.Track, error)
+	GetUserRecentlyPlayedTracks(ctx context.Context, token string) (*models.RecentlyPlayed, error)
 }
 
 type service struct {
@@ -60,4 +61,17 @@ func (s *service) GetTracksByIDs(ctx context.Context, token string, ids []string
 		allTracks = append(allTracks, resp.Tracks...)
 	}
 	return allTracks, nil
+}
+
+func (s *service) GetUserRecentlyPlayedTracks(ctx context.Context, token string) (*models.RecentlyPlayed, error) {
+	req, err := s.client.request(ctx, http.MethodGet, "/me/player/recently-played", token)
+	if err != nil {
+		fmt.Println("Error getting user recently played tracks", err)
+		return nil, err
+	}
+	var recentlyPlayed models.RecentlyPlayed
+	if err := s.client.doJSON(req, &recentlyPlayed); err != nil {
+		return nil, err
+	}
+	return &recentlyPlayed, nil
 }

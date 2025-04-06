@@ -65,11 +65,19 @@ type PlaylistTracks struct {
 }
 
 type RecentlyPlayed struct {
-	Items []PlayHistory `json:"items"`
-	Next  string        `json:"next"`
+	Items   []PlayHistory `json:"items"`
+	Total   int           `json:"total"`
+	Next    string        `json:"next"`
+	Limit   int           `json:"limit"`
+	Cursors Cursors       `json:"cursors"`
 }
 
 type PlayHistory struct {
 	PlayedAt string `json:"played_at"`
 	Track    Track  `json:"track"`
+}
+
+type Cursors struct {
+	After  string `json:"after"`
+	Before string `json:"before"`
 }

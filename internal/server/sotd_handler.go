@@ -175,3 +175,22 @@ func (s *Server) updateSotdHandler(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, sotd)
 }
+
+func (s *Server) getRecommendedSotdsHandler(w http.ResponseWriter, r *http.Request) {
+	UserID := r.PathValue("userId")
+
+	user, err := s.db.GetUserAccountByUserId(r.Context(), UserID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get User", err)
+		return
+	}
+	accessToken, _ := user.AccessToken()
+
+	recentlyPlayed, err := s.spotify.GetUserRecentlyPlayedTracks(r.Context(), accessToken)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get Recently Played Tracks", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, recentlyPlayed)
+}
