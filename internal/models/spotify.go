@@ -21,30 +21,33 @@ type Followers struct {
 }
 
 type Track struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Artists     []Artist `json:"artists"`
-	Album       Album    `json:"album"`
-	DurationMs  int      `json:"duration_ms"`
-	Popularity  int      `json:"popularity"`
-	PreviewURL  string   `json:"preview_url"`
-	ExternalURL string   `json:"external_urls.spotify"`
+	ID         string             `json:"id"`
+	Name       string             `json:"name"`
+	Artists    []ArtistSimplified `json:"artists"`
+	Album      Album              `json:"album"`
+	DurationMs int                `json:"duration_ms"`
+	Popularity int                `json:"popularity"`
 }
 
 type Artist struct {
-	ID          string  `json:"id"`
-	Name        string  `json:"name"`
-	Images      []Image `json:"images"`
-	Popularity  int     `json:"popularity"`
-	ExternalURL string  `json:"external_urls.spotify"`
+	ID         string   `json:"id"`
+	Name       string   `json:"name"`
+	Genres     []string `json:"genres"`
+	Images     []Image  `json:"images"`
+	Popularity int      `json:"popularity"`
+}
+
+type ArtistSimplified struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type Album struct {
 	ID          string  `json:"id"`
 	Name        string  `json:"name"`
+	TotalTracks int     `json:"total_tracks"`
 	Images      []Image `json:"images"`
 	ReleaseDate string  `json:"release_date"`
-	ExternalURL string  `json:"external_urls.spotify"`
 }
 
 type Playlist struct {
@@ -54,7 +57,6 @@ type Playlist struct {
 	Images      []Image        `json:"images"`
 	Owner       SpotifyUser    `json:"owner"`
 	Tracks      PlaylistTracks `json:"tracks"`
-	ExternalURL string         `json:"external_urls.spotify"`
 }
 
 type PlaylistTracks struct {
