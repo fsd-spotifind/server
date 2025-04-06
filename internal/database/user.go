@@ -14,6 +14,12 @@ func (s *service) GetUserById(ctx context.Context, userId string) (*db.UserModel
 	).Exec(ctx)
 }
 
+func (s * service) GetUserAccountByUserId(ctx context.Context, userId string) (*db.AccountModel, error) {
+	return s.client.Account.FindFirst(
+		db.Account.UserID.Equals(userId),
+	).Exec(ctx)
+}
+
 func (s *service) CreateUserStatistic(ctx context.Context, userId string, period db.StatisticPeriod, totalTracks, totalDuration, uniqueArtists int, vibe string, topArtistsIds, topTracksIds, topAlbumsIds []string) (*db.UserStatisticModel, error) {
 	return s.client.UserStatistic.CreateOne(
 		db.UserStatistic.Period.Set(period),

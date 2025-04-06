@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"fsd-backend/internal/models"
 )
 
 func (s *Server) createSotdHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +53,34 @@ func (s *Server) getSotdBydateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, sotd)
+	user, err := s.db.GetUserAccountByUserId(r.Context(), UserID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get User", err)
+		return
+	}
+
+	accessToken, _ := user.AccessToken()
+	track, err := s.spotify.GetTrackByID(r.Context(), accessToken, sotd.TrackID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get Track", err)
+		return
+	}
+
+	note, _ := sotd.Note()
+	mood, _ := sotd.Mood()
+	formattedSotd := models.SotdEntry{
+		ID:        sotd.ID,
+		UserID:    sotd.UserID,
+		TrackID:   sotd.TrackID,
+		Note:      note,
+		Mood:      mood,
+		SetAt:     sotd.SetAt,
+		CreatedAt: sotd.CreatedAt.String(),
+		UpdatedAt: sotd.UpdatedAt.String(),
+		Track:     *track,
+	}
+
+	respondWithJSON(w, http.StatusOK, formattedSotd)
 }
 
 func (s *Server) getSotdsHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +103,51 @@ func (s *Server) getSotdsHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't fetch Song of the Day entries", err)
 		return
 	}
-	respondWithJSON(w, http.StatusOK, sotds)
+
+	user, err := s.db.GetUserAccountByUserId(r.Context(), UserID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get User", err)
+		return
+	}
+	accessToken, _ := user.AccessToken()
+
+	trackIDs := make([]string, len(sotds.SotdEntries))
+	for i, entry := range sotds.SotdEntries {
+		trackIDs[i] = entry.TrackID
+	}
+
+	tracks, err := s.spotify.GetTracksByIDs(r.Context(), accessToken, trackIDs)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to fetch tracks", err)
+		return
+	}
+
+	trackMap := make(map[string]models.Track, len(tracks))
+	for _, track := range tracks {
+		trackMap[track.ID] = track
+	}
+
+	grouped := make(map[string][]models.SotdEntry)
+	for _, entry := range sotds.SotdEntries {
+		note, _ := entry.Note()
+		mood, _ := entry.Mood()
+		grouped[entry.SetAt] = append(grouped[entry.SetAt], models.SotdEntry{
+			ID:        entry.ID,
+			UserID:    entry.UserID,
+			TrackID:   entry.TrackID,
+			Note:      note,
+			Mood:      mood,
+			SetAt:     entry.SetAt,
+			CreatedAt: entry.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: entry.UpdatedAt.Format(time.RFC3339),
+			Track:     trackMap[entry.TrackID],
+		})
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"hasMore": sotds.HasMore,
+		"entries": grouped,
+	})
 }
 
 func (s *Server) updateSotdHandler(w http.ResponseWriter, r *http.Request) {
@@ -101,4 +174,23 @@ func (s *Server) updateSotdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, sotd)
+}
+
+func (s *Server) getRecommendedSotdsHandler(w http.ResponseWriter, r *http.Request) {
+	UserID := r.PathValue("userId")
+
+	user, err := s.db.GetUserAccountByUserId(r.Context(), UserID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get User", err)
+		return
+	}
+	accessToken, _ := user.AccessToken()
+
+	recentlyPlayed, err := s.spotify.GetUserRecentlyPlayedTracks(r.Context(), accessToken)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get Recently Played Tracks", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, recentlyPlayed)
 }
