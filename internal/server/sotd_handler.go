@@ -186,7 +186,7 @@ func (s *Server) getRecommendedSotdsHandler(w http.ResponseWriter, r *http.Reque
 	}
 	accessToken, _ := user.AccessToken()
 
-	recentlyPlayed, err := s.spotify.GetUserRecentlyPlayedTracks(r.Context(), accessToken)
+	recentlyPlayed, err := s.spotify.GetUserRecentlyPlayedTracks(r.Context(), accessToken, nil)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to get Recently Played Tracks", err)
 		return
