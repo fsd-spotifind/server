@@ -2,14 +2,18 @@ package spotify
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"fsd-backend/internal/models"
+	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
 
 type Service interface {
+	RefreshAccessToken(ctx context.Context, refreshToken string) (string, error)
 	GetTrackByID(ctx context.Context, token string, itemId string) (*models.Track, error)
 	GetTracksByIDs(ctx context.Context, token string, ids []string) ([]models.Track, error)
 	GetAlbumsByIDs(ctx context.Context, token string, ids []string) ([]models.Album, error)
@@ -25,6 +29,41 @@ func NewService(config *Config) Service {
 	return &service{
 		client: NewClient(config),
 	}
+}
+
+func (s *service) RefreshAccessToken(ctx context.Context, refreshToken string) (string, error) {
+	data := url.Values{}
+	data.Set("grant_type", "refresh_token")
+	data.Set("refresh_token", refreshToken)
+
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://accounts.spotify.com/api/token", strings.NewReader(data.Encode()))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.SetBasicAuth(s.client.config.ClientID, s.client.config.ClientSecret)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("refresh failed: %s", string(body))
+	}
+
+	var result struct {
+		AccessToken string `json:"access_token"`
+		ExpiresIn   int    `json:"expires_in"`
+		Scope       string `json:"scope"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+
+	return result.AccessToken, nil
 }
 
 func (s *service) GetTrackByID(ctx context.Context, token string, trackId string) (*models.Track, error) {

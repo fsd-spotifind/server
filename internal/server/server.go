@@ -41,5 +41,7 @@ func NewServer() *http.Server {
 		WriteTimeout: 30 * time.Second,
 	}
 
+	NewServer.StartCronJobs()
+
 	return server
 }

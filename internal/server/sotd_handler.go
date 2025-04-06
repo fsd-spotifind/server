@@ -59,7 +59,12 @@ func (s *Server) getSotdBydateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, _ := user.AccessToken()
+	accessToken, err := s.RefreshAccessTokenIfNeeded(r.Context(), user)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get access token", err)
+		return
+	}
+
 	track, err := s.spotify.GetTrackByID(r.Context(), accessToken, sotd.TrackID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to get Track", err)
@@ -109,7 +114,11 @@ func (s *Server) getSotdsHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "Failed to get User", err)
 		return
 	}
-	accessToken, _ := user.AccessToken()
+	accessToken, err := s.RefreshAccessTokenIfNeeded(r.Context(), user)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get access token", err)
+		return
+	}
 
 	trackIDs := make([]string, len(sotds.SotdEntries))
 	for i, entry := range sotds.SotdEntries {
@@ -184,7 +193,11 @@ func (s *Server) getRecommendedSotdsHandler(w http.ResponseWriter, r *http.Reque
 		respondWithError(w, http.StatusInternalServerError, "Failed to get User", err)
 		return
 	}
-	accessToken, _ := user.AccessToken()
+	accessToken, err := s.RefreshAccessTokenIfNeeded(r.Context(), user)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get access token", err)
+		return
+	}
 
 	recentlyPlayed, err := s.spotify.GetUserRecentlyPlayedTracks(r.Context(), accessToken, nil)
 	if err != nil {

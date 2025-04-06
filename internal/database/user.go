@@ -14,10 +14,18 @@ func (s *service) GetUserById(ctx context.Context, userId string) (*db.UserModel
 	).Exec(ctx)
 }
 
-func (s * service) GetUserAccountByUserId(ctx context.Context, userId string) (*db.AccountModel, error) {
+func (s *service) GetUserAccountByUserId(ctx context.Context, userId string) (*db.AccountModel, error) {
 	return s.client.Account.FindFirst(
 		db.Account.UserID.Equals(userId),
 	).Exec(ctx)
+}
+
+func (s *service) GetAllUserAccounts(ctx context.Context) ([]db.AccountModel, error) {
+	accounts, err := s.client.Account.FindMany().Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return accounts, nil
 }
 
 func (s *service) CreateUserStatistic(ctx context.Context, userId string, period db.StatisticPeriod, totalTracks, totalDuration, uniqueArtists int, vibe string, topArtistsIds, topTracksIds, topAlbumsIds []string) (*db.UserStatisticModel, error) {
@@ -39,6 +47,15 @@ func (s *service) GetUserStatisticByPeriod(ctx context.Context, userId string, p
 		db.UserStatistic.UserID.Equals(userId),
 		db.UserStatistic.Period.Equals(period),
 	).Exec(ctx)
+}
+
+func (s *service) UpdateAccessToken(ctx context.Context, userId string, accessToken string) error {
+	_, err := s.client.Account.FindUnique(
+		db.Account.ID.Equals(userId),
+	).Update(
+		db.Account.AccessToken.Set(accessToken),
+	).Exec(ctx)
+	return err
 }
 
 // simple semi-flawed health check that works only if we have 1 user at least

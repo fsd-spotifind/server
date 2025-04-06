@@ -10,18 +10,18 @@ import (
 
 type Client struct {
 	httpClient *http.Client
-	baseURL    string
+	config     *Config
 }
 
 func NewClient(config *Config) *Client {
 	return &Client{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
-		baseURL:    config.BaseURL,
+		config:     config,
 	}
 }
 
 func (c *Client) request(ctx context.Context, method, endpoint, token string) (*http.Request, error) {
-	url := fmt.Sprintf("%s%s", c.baseURL, endpoint)
+	url := fmt.Sprintf("%s%s", c.config.BaseURL, endpoint)
 	req, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
 		return nil, err

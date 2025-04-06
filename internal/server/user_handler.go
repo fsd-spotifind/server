@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"fsd-backend/internal/models"
-	"fsd-backend/internal/utils"
 	db "fsd-backend/prisma/db"
 	"net/http"
 	"strings"
@@ -39,22 +38,20 @@ func (s *Server) createUserStatisticHandler(w http.ResponseWriter, r *http.Reque
 		respondWithError(w, http.StatusInternalServerError, "Failed to get User", err)
 		return
 	}
-	accessToken, _ := user.AccessToken()
-
-	since := utils.PeriodToStartTime(period)
-	recentlyPlayed, err := s.spotify.GetUserRecentlyPlayedTracks(r.Context(), accessToken, &since)
+	accessToken, err := s.RefreshAccessTokenIfNeeded(r.Context(), user)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Failed to get user's recently played tracks", err)
+		respondWithError(w, http.StatusInternalServerError, "Failed to get access token", err)
 		return
 	}
-	computedStats := utils.ComputeUserStatistics(recentlyPlayed)
 
-	userStatistic, err := s.db.CreateUserStatistic(r.Context(), UserID, period, computedStats.TotalTracks, computedStats.TotalDuration, computedStats.UniqueArtists, computedStats.Vibe, computedStats.TopArtistIDs, computedStats.TopTrackIDs, computedStats.TopAlbumIDs)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Failed to create user statistic", err)
+	if err := s.GenerateUserStatistic(r.Context(), UserID, accessToken, period); err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to generate user statistic", err)
 		return
 	}
-	respondWithJSON(w, http.StatusCreated, userStatistic)
+
+	respondWithJSON(w, http.StatusCreated, map[string]string{
+		"message": "User statistic created successfully",
+	})
 }
 
 func (s *Server) getUserStatisticByPeriodHandler(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +69,11 @@ func (s *Server) getUserStatisticByPeriodHandler(w http.ResponseWriter, r *http.
 		respondWithError(w, http.StatusInternalServerError, "Failed to get User", err)
 		return
 	}
-	accessToken, _ := user.AccessToken()
+	accessToken, err := s.RefreshAccessTokenIfNeeded(r.Context(), user)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get access token", err)
+		return
+	}
 
 	var tracks []models.Track
 	var artists []models.Artist
