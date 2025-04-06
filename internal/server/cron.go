@@ -34,20 +34,26 @@ func (s *Server) StartCronJobs() {
 	c := cron.New()
 
 	// Weekly stats: Every Monday at 1am
-	c.AddFunc("0 1 * * 1", func() {
+	_, err := c.AddFunc("0 1 * * 1", func() {
 		log.Println("[CRON] Weekly stats generation started")
 		if err := s.GenerateStatsForAllUsers("weekly"); err != nil {
 			log.Println("Error:", err)
 		}
 	})
+	if err != nil {
+		log.Println("Error:", err)
+	}
 
 	// Monthly stats: First day of month at 2am
-	c.AddFunc("0 2 1 * *", func() {
+	_, err = c.AddFunc("0 2 1 * *", func() {
 		log.Println("[CRON] Monthly stats generation started")
 		if err := s.GenerateStatsForAllUsers("monthly"); err != nil {
 			log.Println("Error:", err)
 		}
 	})
+	if err != nil {
+		log.Println("Error:", err)
+	}
 
 	c.Start()
 }
