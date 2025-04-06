@@ -10,6 +10,7 @@ import (
 
 type Service interface {
 	GetUserById(ctx context.Context, userId string) (*db.UserModel, error)
+	GetUserAccountByUserId(ctx context.Context, userId string) (*db.AccountModel, error)
 	CreateUserStatistic(ctx context.Context, userId string, period db.StatisticPeriod, totalTracks, totalDuration, uniqueArtists int, vibe string, topArtistsIds, topTracksIds, topAlbumsIds []string) (*db.UserStatisticModel, error)
 	GetUserStatisticByPeriod(ctx context.Context, userId string, period db.StatisticPeriod) ([]db.UserStatisticModel, error)
 	CreateSotd(ctx context.Context, userId, trackId, note, mood string) (*db.SongOfTheDayModel, error)
