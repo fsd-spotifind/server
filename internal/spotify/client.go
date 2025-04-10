@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 )
@@ -38,7 +39,8 @@ func (c *Client) doJSON(req *http.Request, out interface{}) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("spotify API error: %s", resp.Status)
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("spotify API error: %s", string(bodyBytes))
 	}
 	return json.NewDecoder(resp.Body).Decode(out)
 }

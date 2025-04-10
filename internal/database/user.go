@@ -43,17 +43,26 @@ func (s *service) CreateUserStatistic(ctx context.Context, userId string, period
 }
 
 func (s *service) GetUserStatisticByPeriod(ctx context.Context, userId string, period db.StatisticPeriod) ([]db.UserStatisticModel, error) {
-	return s.client.UserStatistic.FindMany(
+
+	stats, err := s.client.UserStatistic.FindMany(
 		db.UserStatistic.UserID.Equals(userId),
 		db.UserStatistic.Period.Equals(period),
 	).Exec(ctx)
+
+	if err != nil {
+		fmt.Printf("Database error: %v\n", err)
+		return nil, err
+	}
+
+	return stats, nil
 }
 
-func (s *service) UpdateAccessToken(ctx context.Context, userId string, accessToken string) error {
+func (s *service) UpdateAccessToken(ctx context.Context, userId string, accessToken string, refreshToken string) error {
 	_, err := s.client.Account.FindUnique(
 		db.Account.ID.Equals(userId),
 	).Update(
 		db.Account.AccessToken.Set(accessToken),
+		db.Account.RefreshToken.Set(refreshToken),
 	).Exec(ctx)
 	return err
 }

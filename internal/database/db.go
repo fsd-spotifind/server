@@ -22,7 +22,7 @@ type Service interface {
 	GetFriendRequests(ctx context.Context, userId string) ([]FriendWithUsers, error)
 	AcceptFriendRequest(ctx context.Context, userId, requestId string) (*db.FriendModel, error)
 	GetFriends(ctx context.Context, userId string) ([]FriendWithUsers, error)
-	UpdateAccessToken(ctx context.Context, userId string, accessToken string) error
+	UpdateAccessToken(ctx context.Context, userId string, accessToken string, refreshToken string) error
 	Health() map[string]string
 	Close() error
 }

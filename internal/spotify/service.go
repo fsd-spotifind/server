@@ -13,7 +13,7 @@ import (
 )
 
 type Service interface {
-	RefreshAccessToken(ctx context.Context, refreshToken string) (string, error)
+	RefreshAccessToken(ctx context.Context, refreshToken string) (RefreshResult, error)
 	GetTrackByID(ctx context.Context, token string, itemId string) (*models.Track, error)
 	GetTracksByIDs(ctx context.Context, token string, ids []string) ([]models.Track, error)
 	GetAlbumsByIDs(ctx context.Context, token string, ids []string) ([]models.Album, error)
@@ -31,39 +31,41 @@ func NewService(config *Config) Service {
 	}
 }
 
-func (s *service) RefreshAccessToken(ctx context.Context, refreshToken string) (string, error) {
+type RefreshResult struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	ExpiresIn    int    `json:"expires_in"`
+	Scope        string `json:"scope"`
+}
+
+func (s *service) RefreshAccessToken(ctx context.Context, refreshToken string) (RefreshResult, error) {
 	data := url.Values{}
 	data.Set("grant_type", "refresh_token")
 	data.Set("refresh_token", refreshToken)
-
-	req, err := http.NewRequestWithContext(ctx, "POST", "https://accounts.spotify.com/api/token", strings.NewReader(data.Encode()))
+	req, err := http.NewRequest("POST", "https://accounts.spotify.com/api/token", strings.NewReader(data.Encode()))
 	if err != nil {
-		return "", err
+		return RefreshResult{}, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(s.client.config.ClientID, s.client.config.ClientSecret)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", err
+		return RefreshResult{}, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		body, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("refresh failed: %s", string(body))
+		return RefreshResult{}, fmt.Errorf("refresh failed: %s", string(body))
 	}
 
-	var result struct {
-		AccessToken string `json:"access_token"`
-		ExpiresIn   int    `json:"expires_in"`
-		Scope       string `json:"scope"`
-	}
+	var result RefreshResult
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return "", err
+		return RefreshResult{}, err
 	}
 
-	return result.AccessToken, nil
+	return result, nil
 }
 
 func (s *service) GetTrackByID(ctx context.Context, token string, trackId string) (*models.Track, error) {

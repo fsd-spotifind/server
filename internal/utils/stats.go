@@ -8,15 +8,25 @@ import (
 )
 
 func PeriodToStartTime(period db.StatisticPeriod) time.Time {
+
 	now := time.Now()
+	var startTime time.Time
+
 	switch period {
 	case db.StatisticPeriodWeekly:
-		return now.AddDate(0, 0, -7)
+		startTime = now.AddDate(0, 0, -7)
 	case db.StatisticPeriodMonthly:
-		return now.AddDate(0, -1, 0)
+		startTime = now.AddDate(0, -1, 0)
+	case db.StatisticPeriodSemiannual:
+		startTime = now.AddDate(0, -6, 0)
+	case db.StatisticPeriodAnnual:
+		startTime = now.AddDate(-1, 0, 0)
 	default:
-		return now.AddDate(0, 0, -7)
+		startTime = now.AddDate(0, 0, -7)
+
 	}
+
+	return startTime
 }
 
 func TopNKeys(counter map[string]int, n int) []string {
