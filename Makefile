@@ -45,12 +45,14 @@ clean:
 # Live Reload
 watch:
 	@if command -v air > /dev/null; then \
+            set -a; source .env; set +a; \
             air; \
             echo "Watching...";\
         else \
             read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
             if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
                 go install github.com/air-verse/air@latest; \
+                set -a; source .env; set +a; \
                 air; \
                 echo "Watching...";\
             else \
