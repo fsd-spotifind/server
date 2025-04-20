@@ -2,6 +2,8 @@
 
 A Go-based backend service for the Spotifind application, providing API endpoints and database functionality
 
+GitHub: [link](https://github.com/fsd-spotifind/server
+
 ## Main Functionalities
 
 ### User's Spotify Stats
